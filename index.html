@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>A Special Question</title>
+        <script src="https://cdn.emailjs.com/dist/email.min.js"></script>
+        <script>
+            (function() {
+                emailjs.init("3bPr31mtoRg-sFlDW"); // ← Replace with your actual User ID
+            })();
+        </script>
+
+        <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;600;700&family=Playfair+Display:wght@300;400;600&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Playfair Display', 'Georgia', serif;
+                background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 30%, #fecfef 70%, #ff9a9e 100%);
+                min-height: 100vh;
+                overflow: hidden;
+                cursor: none;
+                position: relative;
+            }
+
+            body::before {
+                content: '';
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: radial-gradient(circle at 20% 50%, rgba(255, 182, 193, 0.3) 0%, transparent 50%),
+                            radial-gradient(circle at 80% 20%, rgba(255, 192, 203, 0.3) 0%, transparent 50%),
+                            radial-gradient(circle at 40% 80%, rgba(255, 105, 180, 0.2) 0%, transparent 50%);
+                pointer-events: none;
+                z-index: -1;
+            }
+
+            .custom-cursor {
+                position: fixed;
+                width: 20px;
+                height: 20px;
+                background: radial-gradient(circle, rgba(255, 255, 255, 0.8) 0%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
+                border-radius: 50%;
+                pointer-events: none;
+                z-index: 9999;
+                mix-blend-mode: difference;
+                transition: transform 0.1s ease;
+            }
+
+            #canvas {
+                position: fixed;
+                top: 0;
+                left: 0;
+                z-index: 1;
+            }
+
+            .content {
+                position: relative;
+                z-index: 2;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                min-height: 100vh;
+                text-align: center;
+                padding: 2rem;
+            }
+
+            .message {
+                opacity: 0;
+                transform: translateY(50px) scale(0.8);
+                transition: all 1.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                color: white;
+                text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            }
+
+            .message.show {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+
+            .main-text {
+                font-size: clamp(2.5rem, 6vw, 5rem);
+                font-weight: 600;
+                line-height: 1.2;
+                margin-bottom: 3rem;
+                background: linear-gradient(45deg, #e91e63, #ff6b9d, #ff1744, #c2185b);
+                background-size: 400% 400%;
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                animation: gradientShift 3s ease-in-out infinite;
+                font-family: 'Dancing Script', cursive;
+                text-shadow: 0 0 30px rgba(233, 30, 99, 0.5);
+                filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+            }
+
+            .subtitle {
+                font-size: clamp(1rem, 2.5vw, 1.5rem);
+                font-weight: 300;
+                opacity: 0.8;
+                margin-bottom: 3rem;
+                letter-spacing: 0.5px;
+                font-family: 'Cormorant Garamond', serif;
+                font-style: italic;
+            }
+
+            .button-container {
+                display: flex;
+                gap: 2rem;
+                justify-content: center;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+
+            .cta-button {
+                background: linear-gradient(45deg, #e91e63, #ad1457);
+                border: none;
+                padding: 1.5rem 4rem;
+                border-radius: 50px;
+                color: white;
+                font-size: 1.2rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+                box-shadow: 0 15px 35px rgba(233, 30, 99, 0.4);
+                text-transform: uppercase;
+                letter-spacing: 2px;
+                position: relative;
+                overflow: hidden;
+                font-family: 'Playfair Display', serif;
+                transform: translateY(0);
+            }
+
+            .no-button {
+                background: linear-gradient(45deg, #f44336, #d32f2f);
+                box-shadow: 0 15px 35px rgba(244, 67, 54, 0.4);
+            }
+
+            .no-button:hover {
+                background: linear-gradient(45deg, #e53935, #c62828);
+                transform: translateY(-5px) scale(1.05);
+                box-shadow: 0 20px 45px rgba(244, 67, 54, 0.5);
+            }
+
+            .cta-button::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+                transition: left 0.5s;
+            }
+
+            .cta-button:hover::before {
+                left: 100%;
+            }
+
+            .cta-button:hover {
+                transform: translateY(-5px) scale(1.05);
+                box-shadow: 0 20px 45px rgba(233, 30, 99, 0.5);
+            }
+
+            .rejection-message {
+                position: fixed;
+                top: 20%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 4rem;
+                font-family: 'Dancing Script', cursive;
+                color: #f44336;
+                text-shadow: 0 0 20px rgba(244, 67, 54, 0.8), 0 0 40px rgba(244, 67, 54, 0.6);
+                opacity: 0;
+                pointer-events: none;
+                z-index: 1000;
+                animation: pleaseAnimation 3s ease-in-out;
+                background: rgba(255, 255, 255, 0.9);
+                padding: 2rem 4rem;
+                border-radius: 30px;
+                backdrop-filter: blur(10px);
+                border: 2px solid rgba(244, 67, 54, 0.3);
+            }
+
+            @keyframes pleaseAnimation {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.3) rotate(-10deg);
+                }
+
+                25% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1.1) rotate(2deg);
+                }
+
+                50% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1) rotate(-1deg);
+                }
+
+                75% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1.05) rotate(1deg);
+                }
+
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.8) rotate(0deg);
+                }
+            }
+
+            .stardust-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .magic-sparkle {
+                position: absolute;
+                color: rgba(255, 182, 193, 0.8);
+                font-size: 1.5rem;
+                animation: magicFloat 4s ease-in-out infinite;
+            }
+
+            @keyframes magicFloat {
+
+                0%,
+                100% {
+                    transform: translateY(0) rotate(0deg) scale(1);
+                    opacity: 0.3;
+                }
+
+                25% {
+                    transform: translateY(-20px) rotate(90deg) scale(1.2);
+                    opacity: 1;
+                }
+
+                50% {
+                    transform: translateY(-40px) rotate(180deg) scale(0.8);
+                    opacity: 0.7;
+                }
+
+                75% {
+                    transform: translateY(-20px) rotate(270deg) scale(1.1);
+                    opacity: 1;
+                }
+            }
+
+            @keyframes gradientShift {
+
+                0%,
+                100% {
+                    background-position: 0% 50%;
+                }
+
+                50% {
+                    background-position: 100% 50%;
+                }
+            }
+
+            .sparkle {
+                position: fixed;
+                pointer-events: none;
+                z-index: 3;
+            }
+
+            .sparkle::before {
+                content: '✨';
+                position: absolute;
+                animation: sparkleFloat 2s ease-out forwards;
+            }
+
+            @keyframes sparkleFloat {
+                0% {
+                    opacity: 1;
+                    transform: translateY(0) scale(1);
+                }
+
+                100% {
+                    opacity: 0;
+                    transform: translateY(-100px) scale(0);
+                }
+            }
+
+            .floating-hearts {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .floating-heart {
+                position: absolute;
+                color: rgba(255, 182, 193, 0.6);
+                font-size: 2rem;
+                animation: floatHeart 8s linear infinite;
+            }
+
+            @keyframes floatHeart {
+                0% {
+                    transform: translateY(100vh) rotate(0deg);
+                    opacity: 0;
+                }
+
+                10% {
+                    opacity: 1;
+                }
+
+                90% {
+                    opacity: 1;
+                }
+
+                100% {
+                    transform: translateY(-100px) rotate(360deg);
+                    opacity: 0;
+                }
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="custom-cursor"></div>
+        <div class="stardust-overlay" id="stardustOverlay"></div>
+        <canvas id="canvas"></canvas>
+        <div class="floating-hearts"></div>
+
+        <div class="content">
+            <div class="message" id="message">
+                <h1 class="main-text">Ishanvii ji,<br>ap meri girlfriend ban jao na?</h1>
+                <div class="button-container">
+                    <button class="cta-button no-button" onclick="handleNo()">No</button>
+                    <button class="cta-button" onclick="handleYes()">Yes</button>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Canvas setup
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            let particles = [];
+            let animationPhase = 'pixieDust'; // pixieDust -> formingHeart -> showMessage
+            let heartFormed = false;
+            let messageShown = false;
+            let responses = [];
+
+            function recordResponse(response) {
+                const timestamp = new Date().toISOString();
+                responses.push({
+                    response,
+                    timestamp
+                });
+
+                const templateParams = {
+                    response: response,
+                    timestamp: timestamp,
+                    all_responses: JSON.stringify(responses, null, 2)
+                };
+
+                emailjs.send('service_63mefcb', 'template_lqzwz8u', templateParams)
+                    .then(function(res) {
+                        console.log('✅ Email sent!', res.status, res.text);
+                    }, function(err) {
+                        console.error('❌ Failed to send email.', err);
+                    });
+            }
+
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // Custom cursor
+            const cursor = document.querySelector('.custom-cursor');
+            document.addEventListener('mousemove', (e) => {
+                cursor.style.left = e.clientX - 10 + 'px';
+                cursor.style.top = e.clientY - 10 + 'px';
+            });
+
+            // Particle class
+            class Particle {
+                constructor(x, y, targetX = null, targetY = null) {
+                    this.x = x || Math.random() * canvas.width;
+                    this.y = y || Math.random() * canvas.height;
+                    this.targetX = targetX;
+                    this.targetY = targetY;
+                    this.vx = (Math.random() - 0.5) * 2;
+                    this.vy = (Math.random() - 0.5) * 2;
+                    this.life = 1.0;
+                    this.decay = Math.random() * 0.01 + 0.005;
+                    this.size = Math.random() * 3 + 2;
+                    this.color = `hsl(${Math.random() * 60 + 300}, 70%, ${Math.random() * 30 + 60}%)`;
+                    this.phase = 'floating';
+                    this.pulseOffset = Math.random() * Math.PI * 2;
+                }
+
+                update() {
+                    if (this.phase === 'floating') {
+                        // Floating pixie dust behavior
+                        this.x += this.vx;
+                        this.y += this.vy;
+
+                        // Bounce off edges
+                        if (this.x < 0 || this.x > canvas.width) this.vx *= -1;
+                        if (this.y < 0 || this.y > canvas.height) this.vy *= -1;
+
+                        // Add some randomness
+                        this.vx += (Math.random() - 0.5) * 0.1;
+                        this.vy += (Math.random() - 0.5) * 0.1;
+
+                        // Limit velocity
+                        this.vx = Math.max(-3, Math.min(3, this.vx));
+                        this.vy = Math.max(-3, Math.min(3, this.vy));
+
+                    } else if (this.phase === 'toHeart' && this.targetX !== null && this.targetY !== null) {
+                        // Move towards heart position
+                        const dx = this.targetX - this.x;
+                        const dy = this.targetY - this.y;
+                        this.x += dx * 0.05;
+                        this.y += dy * 0.05;
+
+                        if (Math.abs(dx) < 5 && Math.abs(dy) < 5) {
+                            this.phase = 'heart';
+                        }
+                    } else if (this.phase === 'heart') {
+                        // Gentle pulsing when in heart formation
+                        const pulse = Math.sin(Date.now() * 0.005 + this.pulseOffset) * 2;
+                        this.size = Math.max(1, this.size + pulse * 0.1);
+                    } else if (this.phase === 'rejection') {
+                        // Red particles for rejection animation
+                        this.x += this.vx;
+                        this.y += this.vy;
+                        this.vy += 0.1; // gravity
+                        this.size *= 0.98; // shrinking
+                    }
+
+                    this.life -= this.decay;
+                }
+
+                draw() {
+                    ctx.save();
+                    ctx.globalAlpha = this.life;
+                    ctx.fillStyle = this.color;
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = this.color;
+
+                    // Draw particle with glow effect
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Additional sparkle effect
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+            }
+
+            // Heart shape calculation
+            function getHeartPoints(centerX, centerY, size) {
+                const points = [];
+                for (let t = 0; t < Math.PI * 2; t += 0.1) {
+                    const x = centerX + size * (16 * Math.sin(t) ** 3);
+                    const y = centerY - size * (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+                    points.push({
+                        x,
+                        y
+                    });
+                }
+                return points;
+            }
+
+            // Initialize particles
+            function initParticles() {
+                particles = [];
+                for (let i = 0; i < 300; i++) {
+                    particles.push(new Particle());
+                }
+            }
+
+            // Create magical stardust overlay
+            function createStardustOverlay() {
+                const overlay = document.getElementById('stardustOverlay');
+
+                for (let i = 0; i < 50; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'magic-sparkle';
+                    sparkle.innerHTML = ['✨', '💫', '⭐', '🌟', '💖'][Math.floor(Math.random() * 5)];
+                    sparkle.style.left = Math.random() * 100 + '%';
+                    sparkle.style.top = Math.random() * 100 + '%';
+                    sparkle.style.animationDelay = Math.random() * 4 + 's';
+                    sparkle.style.animationDuration = (Math.random() * 3 + 3) + 's';
+                    overlay.appendChild(sparkle);
+                }
+            }
+
+            // Transform to heart
+            function transformToHeart() {
+                if (heartFormed) return;
+
+                animationPhase = 'formingHeart';
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2 - 50;
+                const heartPoints = getHeartPoints(centerX, centerY, 8);
+
+                particles.forEach((particle, index) => {
+                    if (index < heartPoints.length) {
+                        const point = heartPoints[index];
+                        particle.targetX = point.x;
+                        particle.targetY = point.y;
+                        particle.phase = 'toHeart';
+                        particle.color = `hsl(${330 + Math.random() * 30}, 80%, 70%)`;
+                    }
+                });
+
+                setTimeout(() => {
+                    heartFormed = true;
+                    showMessage();
+                }, 3000);
+            }
+
+            // Show message
+            function showMessage() {
+                if (messageShown) return;
+                messageShown = true;
+
+                const message = document.getElementById('message');
+                message.classList.add('show');
+
+                // Add floating hearts
+                createFloatingHearts();
+            }
+
+            // Create floating hearts background
+            function createFloatingHearts() {
+                const container = document.querySelector('.floating-hearts');
+
+                setInterval(() => {
+                    const heart = document.createElement('div');
+                    heart.className = 'floating-heart';
+                    heart.innerHTML = '💖';
+                    heart.style.left = Math.random() * 100 + '%';
+                    heart.style.animationDuration = (Math.random() * 3 + 5) + 's';
+                    heart.style.animationDelay = Math.random() * 2 + 's';
+                    container.appendChild(heart);
+
+                    setTimeout(() => {
+                        heart.remove();
+                    }, 8000);
+                }, 800);
+            }
+
+            // Mouse interaction
+            canvas.addEventListener('mousemove', (e) => {
+                if (animationPhase === 'pixieDust') {
+                    // Add more particles around mouse with different colors
+                    for (let i = 0; i < 5; i++) {
+                        const particle = new Particle(
+                            e.clientX + (Math.random() - 0.5) * 80,
+                            e.clientY + (Math.random() - 0.5) * 80
+                        );
+                        particle.color = `hsl(${Math.random() * 60 + 300}, 90%, ${Math.random() * 30 + 60}%)`;
+                        particle.size = Math.random() * 4 + 3;
+                        particles.push(particle);
+                    }
+                }
+            });
+
+            // Click to create massive sparkle explosion
+            document.addEventListener('click', (e) => {
+                for (let i = 0; i < 15; i++) {
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    sparkle.innerHTML = ['✨', '💫', '⭐', '🌟'][Math.floor(Math.random() * 4)];
+                    sparkle.style.left = e.clientX + (Math.random() - 0.5) * 100 + 'px';
+                    sparkle.style.top = e.clientY + (Math.random() - 0.5) * 100 + 'px';
+                    sparkle.style.fontSize = (Math.random() * 20 + 15) + 'px';
+                    sparkle.style.color = `hsl(${Math.random() * 60 + 300}, 80%, 70%)`;
+                    document.body.appendChild(sparkle);
+
+                    setTimeout(() => sparkle.remove(), 2000);
+                }
+            });
+
+            // Animation loop
+            function animate() {
+                ctx.fillStyle = 'rgba(255, 154, 158, 0.05)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Update and draw particles
+                particles = particles.filter(particle => {
+                    particle.update();
+                    particle.draw();
+                    return particle.life > 0;
+                });
+
+                // Add new particles if in pixie dust phase (more particles!)
+                if (animationPhase === 'pixieDust' && particles.length < 250) {
+                    for (let i = 0; i < 3; i++) {
+                        particles.push(new Particle());
+                    }
+                }
+
+                requestAnimationFrame(animate);
+            }
+
+            // Start sequence
+            function startSequence() {
+                setTimeout(() => {
+                    transformToHeart();
+                }, 5000);
+            }
+
+            // Button handlers
+            function handleNo() {
+                recordResponse('no');
+
+                // Create rejection message with better positioning
+                const rejectionMsg = document.createElement('div');
+                rejectionMsg.className = 'rejection-message';
+                rejectionMsg.textContent = 'Please ban jao na? 🥺';
+                document.body.appendChild(rejectionMsg);
+
+                setTimeout(() => rejectionMsg.remove(), 3000);
+
+                // Create massive red fairy dust explosion
+                for (let i = 0; i < 150; i++) {
+                    const particle = new Particle(
+                        canvas.width / 2 + (Math.random() - 0.5) * 200,
+                        canvas.height / 2 + (Math.random() - 0.5) * 200
+                    );
+                    particle.color = `hsl(${Math.random() * 30 + 340}, 90%, 65%)`;
+                    particle.phase = 'rejection';
+                    particle.vx = (Math.random() - 0.5) * 15;
+                    particle.vy = (Math.random() - 0.5) * 15 - 8;
+                    particle.size = Math.random() * 5 + 3;
+                    particles.push(particle);
+                }
+            }
+
+            function handleYes() {
+                recordResponse('yes');
+                showResponse();
+            }
+
+            // Button response (for yes)
+            function showResponse() {
+                // Create massive explosion of hearts and sparkles
+                for (let i = 0; i < 100; i++) {
+                    setTimeout(() => {
+                        const heart = document.createElement('div');
+                        heart.innerHTML = ['💖', '💕', '💗', '💝', '❤️'][Math.floor(Math.random() * 5)];
+                        heart.style.position = 'fixed';
+                        heart.style.left = Math.random() * window.innerWidth + 'px';
+                        heart.style.top = Math.random() * window.innerHeight + 'px';
+                        heart.style.fontSize = (Math.random() * 40 + 25) + 'px';
+                        heart.style.color = `hsl(${330 + Math.random() * 30}, 90%, 70%)`;
+                        heart.style.pointerEvents = 'none';
+                        heart.style.zIndex = '1000';
+                        heart.style.animation = 'sparkleFloat 4s ease-out forwards';
+                        heart.style.textShadow = '0 0 10px rgba(255, 182, 193, 0.8)';
+                        document.body.appendChild(heart);
+
+                        setTimeout(() => heart.remove(), 4000);
+                    }, i * 30);
+                }
+            }
+
+            // Initialize
+            initParticles();
+            createStardustOverlay();
+            animate();
+            startSequence();
+        </script>
+    </body>
+
+</html>
+
